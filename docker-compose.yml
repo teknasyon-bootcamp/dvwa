@@ -1,0 +1,49 @@
+---
+version: '3'
+
+services:
+
+  dvwa:
+    image: cytopia/dvwa:php-${PHP_VERSION:-7.2}
+    restart: unless-stopped
+    ports:
+      - "${LISTEN_PORT:-8000}:80"
+      - "${SHELL_PORT:-4444}:4444"
+    networks:
+      - frontend
+      - backend
+    environment:
+      - RECAPTCHA_PRIV_KEY=${RECAPTCHA_PRIV_KEY:-}
+      - RECAPTCHA_PUB_KEY=${RECAPTCHA_PUB_KEY:-}
+      - SECURITY_LEVEL=${SECURITY_LEVEL:-medium}
+      - PHPIDS_ENABLED=${PHPIDS_ENABLED:-0}
+      - PHPIDS_VERBOSE=${PHPIDS_VERBOSE:-0}
+      - PHP_DISPLAY_ERRORS=${PHP_DISPLAY_ERRORS:-0}
+      - MYSQL_HOSTNAME=${MYSQL_HOSTNAME:-mysql}
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-dvwa}
+      - MYSQL_USERNAME=${MYSQL_USERNAME:-default}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-secret}
+
+  mysql:
+    image: mysql:5.6
+    hostname: mysql
+    volumes:
+      - dvwa_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: dvwa
+      MYSQL_USER: default
+      MYSQL_PASSWORD: secret
+    restart: unless-stopped
+    networks:
+      - backend
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
+
+volumes:
+  dvwa_data:
+
